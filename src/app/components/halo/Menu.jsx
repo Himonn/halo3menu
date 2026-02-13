@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from 'react';
 
-const Menu = () => {
+const Menu = ({ items = [], onSelect }) => {
     const [selected, setSelected] = useState(0);
-    const menuItems = ['start solo game', 'campaign', 'matchmaking', 'custom games', 'forge', 'theater'];
+
+    // Reset selection when specific menu items change (e.g. navigation)
+    useEffect(() => {
+        setSelected(0);
+    }, [items]);
 
     useEffect(() => {
         function handleKeyDown(event) {
+            if (items.length === 0) return;
+
             if (event.key === 'ArrowUp') {
-                if (selected > 0){
-                    setSelected(selected - 1);
+                if (selected > 0) {
+                    setSelected(prev => prev - 1);
                 }
             } else if (event.key === 'ArrowDown') {
-                if (selected < menuItems.length - 1){
-                    setSelected(selected + 1);
+                if (selected < items.length - 1) {
+                    setSelected(prev => prev + 1);
+                }
+            } else if (event.key === 'Enter') {
+                if (onSelect) {
+                    onSelect(selected);
                 }
             }
         }
@@ -22,16 +32,23 @@ const Menu = () => {
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [selected]);
+    }, [selected, items, onSelect]);
 
-    const selectItem = (e) => {
-        setSelected(parseInt(e.target.id));
+    const selectItem = (index) => {
+        setSelected(index);
     };
+
+    const handleClick = (index) => {
+        setSelected(index);
+        if (onSelect) {
+            onSelect(index);
+        }
+    }
 
     return (
         <div className="font-halo-regular text-xl relative top-0 left-0 w-full h-full flex items-center justify-center text-[#8db6ef] mb-10">
             <ul className="list-none w-full">
-                {menuItems.map((name, index) => (
+                {items.map((name, index) => (
                     <div key={`div${index}`}>
                         <li
                             key={index}
@@ -41,7 +58,8 @@ const Menu = () => {
                             mt-1
                             ${selected === index ? 'bg-gradient-to-r from-orange-500 via-orange-500 via-orange-500 to-orange-500/10 opacity-90 text-white' : ''} 
                         `}
-                            onMouseOver={selectItem}
+                            onMouseOver={() => selectItem(index)}
+                            onClick={() => handleClick(index)}
                             id={index.toString()}
                         >
                             {name.toUpperCase()}
