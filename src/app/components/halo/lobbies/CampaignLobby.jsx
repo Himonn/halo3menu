@@ -68,7 +68,7 @@ const CampaignLobby = (props) => {
                             [Mission Image]
                         </div>
                         <div className="text-white font-bold uppercase text-sm mt-1 px-1">
-                            CAMPAIGN: {currentMission}
+                            {currentMission} on {difficulty}
                         </div>
                     </div>
                 </div>
