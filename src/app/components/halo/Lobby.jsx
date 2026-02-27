@@ -3,6 +3,8 @@ import { XButton, AButton, BButton, YButton, SpeakerIcon, ConnectionIcon, RankIc
 import WorldMap from './WorldMap';
 import PlayerSettings from './PlayerSettings';
 import MapSelector from './MapSelector';
+import NetworkSelector from './NetworkSelector';
+import MissionSelector from './MissionSelector';
 
 const Lobby = ({
     playerName,
@@ -27,7 +29,7 @@ const Lobby = ({
     // navRegion: 'left' (Header + Options) or 'right' (Roster)
     const [navRegion, setNavRegion] = useState('left');
 
-    const isCampaign = gameType === 'CAMPAIGN';
+    const isCampaign = gameType === 'CAMPAIGN' || title.includes('CAMPAIGN');
 
     // Header Items Count Logic:
     // Matchmaking: 3 (Subtitle, Network, Playlist)
@@ -64,6 +66,8 @@ const Lobby = ({
     // Map Selector State
     const [currentMapName, setCurrentMapName] = useState(mapName);
     const [showMapSelector, setShowMapSelector] = useState(false);
+    const [currentMissionName, setCurrentMissionName] = useState('ARRIVAL');
+    const [showMissionSelector, setShowMissionSelector] = useState(false);
 
     // leftIndex mapping:
     // Matchmaking: 0=Subtitle, 1=Network, 2=Playlist
@@ -91,11 +95,11 @@ const Lobby = ({
 
     // Lobby Switcher Options
     const LOBBY_OPTIONS = [
-        { label: 'Campaign', key: 'campaign' },
-        { label: 'Matchmaking', key: 'matchmaking' },
-        { label: 'Custom Games', key: 'custom_games' },
-        { label: 'Forge', key: 'forge' },
-        { label: 'Theater', key: 'theater' }
+        { label: 'Campaign', key: 'campaign', description: "Take your party directly to Campaign to defeat the Covenant, save the galaxy, and finish the fight!" },
+        { label: 'Matchmaking', key: 'matchmaking', description: "Take your party to Xbox LIVE and into the frenetic action of live combat, objective-based missions, and dangerous military exercises." },
+        { label: 'Custom Games', key: 'custom_games', description: "Take your party to combat and objective-based missions that you select and design. Your rules, your maps, your game." },
+        { label: 'Forge', key: 'forge', description: "Take your party to collaborate in real time to edit and play variations of your favorite maps, from the subtle to the insane." },
+        { label: 'Theater', key: 'theater', description: "Take your party to view and replay films and footage of your Halo 3 exploits, from Campaign, to Multiplayer, to Forge Mode." }
     ];
     const [switcherIndex, setSwitcherIndex] = useState(0);
 
@@ -233,34 +237,74 @@ const Lobby = ({
                 <h1 className="text-4xl font-halo-regular tracking-wider mb-1 uppercase text-white">{title}</h1>
 
                 {/* Variant-Specific Header Info */}
-                <div className="text-[#8db6ef] text-lg uppercase leading-tight mb-8 font-bold opacity-80 flex flex-col items-start">
-                    <div className={`cursor-pointer ${navRegion === 'left' && leftIndex === 0 ? 'bg-orange-500 text-white px-1' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(0); setShowLobbySwitcher(true); }}>
-                        {subtitle}
+                <div className="text-[#8db6ef] text-lg uppercase leading-tight mb-8 font-bold flex flex-col items-start">
+                    <div className={`cursor-pointer w-full flex items-center relative z-50 ${(navRegion === 'left' && leftIndex === 0) || showLobbySwitcher ? 'bg-orange-500 text-white opacity-100' : 'opacity-80'
+                        }`} onClick={() => { setNavRegion('left'); setLeftIndex(0); setShowLobbySwitcher(true); }}>
+                        <span className="px-1">{subtitle}</span>
+
+                        {/* Lobby Switcher Flyout */}
+                        {showLobbySwitcher && (
+                            <div className="absolute left-[280px] top-[-10px] flex flex-row shadow-2xl z-50">
+                                {/* Menu List */}
+                                <div className="flex flex-col bg-black/90 border border-white/20 min-w-[200px]">
+                                    {LOBBY_OPTIONS.map((opt, idx) => (
+                                        <div
+                                            key={opt.key}
+                                            className={`
+                                            px-3 py-1 text-lg flex items-center cursor-pointer uppercase font-bold tracking-wide
+                                            ${idx === switcherIndex
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'text-[#8db6ef] hover:bg-white/5'}
+                                        `}
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent parent click re-triggering
+                                                if (onSwitchLobby) onSwitchLobby(opt.key);
+                                                setShowLobbySwitcher(false);
+                                            }}
+                                            onMouseEnter={() => setSwitcherIndex(idx)}
+                                        >
+                                            {opt.label}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Description Panel */}
+                                <div className="w-[300px] bg-[#050b1b]/95 border-t border-b border-r border-white/20 p-3 text-white normal-case text-base font-normal leading-tight h-auto flex items-center">
+                                    {LOBBY_OPTIONS[switcherIndex].description}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    <div className={`cursor-pointer ${navRegion === 'left' && leftIndex === 1 ? 'bg-orange-500 text-white px-1' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(1); setShowNetworkSelector(true); }}>
+                    <div className={`cursor-pointer opacity-80 ${navRegion === 'left' && leftIndex === 1 ? 'bg-orange-500 text-white px-1 opacity-100' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(1); setShowNetworkSelector(true); }}>
                         NETWORK: {currentNetwork}
                     </div>
 
                     {variant === 'matchmaking' ? (
-                        <div className={`cursor-pointer ${navRegion === 'left' && leftIndex === 2 ? 'bg-orange-500 text-white px-1' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(2); }}>
+                        <div className={`cursor-pointer opacity-80 ${navRegion === 'left' && leftIndex === 2 ? 'bg-orange-500 text-white px-1 opacity-100' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(2); }}>
                             PLAYLIST: {playlist}
                         </div>
                     ) : (
                         <>
-                            <div className={`cursor-pointer ${navRegion === 'left' && leftIndex === 2 ? 'bg-orange-500 text-white px-1' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(2); }}>
+                            <div className={`cursor-pointer opacity-80 ${navRegion === 'left' && leftIndex === 2 ? 'bg-orange-500 text-white px-1 opacity-100' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(2); }}>
                                 GAME: {gameType}
                             </div>
 
                             {isCampaign && (
-                                <div className={`cursor-pointer ${navRegion === 'left' && leftIndex === 3 ? 'bg-orange-500 text-white px-1' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(3); setShowDifficultySelector(true); }}>
+                                <div className={`cursor-pointer opacity-80 ${navRegion === 'left' && leftIndex === 3 ? 'bg-orange-500 text-white px-1 opacity-100' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(3); setShowDifficultySelector(true); }}>
                                     DIFFICULTY: {currentDifficulty}
                                 </div>
                             )}
 
-                            <div className={`cursor-pointer ${navRegion === 'left' && leftIndex === (isCampaign ? 4 : 3) ? 'bg-orange-500 text-white px-1' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(isCampaign ? 4 : 3); setShowMapSelector(true); }}>
-                                MAP: {currentMapName}
-                            </div>
+                            {isCampaign ? (
+                                <div className={`cursor-pointer opacity-80 ${navRegion === 'left' && leftIndex === 4 ? 'bg-orange-500 text-white px-1 opacity-100' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(4); setShowMissionSelector(true); }}>
+                                    MISSION: {currentMissionName}
+                                </div>
+                            ) : (
+                                <div className={`cursor-pointer opacity-80 ${navRegion === 'left' && leftIndex === (isCampaign ? 4 : 3) ? 'bg-orange-500 text-white px-1 opacity-100' : ''}`} onClick={() => { setNavRegion('left'); setLeftIndex(isCampaign ? 4 : 3); setShowMapSelector(true); }}>
+                                    MAP: {currentMapName}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -413,64 +457,26 @@ const Lobby = ({
                 />
             )}
 
-            {/* Lobby Switcher Modal */}
+            {/* Lobby Switcher Modal - Removed/Replaced with Flyout */}
+
+            {/* Blur Overlay for Switch Lobby */}
             {showLobbySwitcher && (
-                <div className="fixed inset-0 bg-black/60 z-50">
-                    {/* Positioned Sub-menu - Aligned with "SWITCH LOBBY" text */}
-                    {/* The "SWITCH LOBBY" text is in the left column, roughly 8.5rem down (title is large) and pl-8 padded */}
-                    <div className="absolute top-[6.5rem] left-[2rem] w-[280px] flex flex-col">
-                        <div className="flex flex-col gap-0 bg-black/90 border border-white/20 shadow-2xl backdrop-blur-sm py-1">
-                            {LOBBY_OPTIONS.map((opt, idx) => (
-                                <div
-                                    key={opt.key}
-                                    className={`
-                                        pl-3 py-1 text-xl flex items-center cursor-pointer uppercase font-bold tracking-wide
-                                        ${idx === switcherIndex
-                                            ? 'bg-gradient-to-r from-orange-500 via-orange-500 to-orange-500/10 text-white border-l-4 border-white'
-                                            : 'text-[#8db6ef] border-l-4 border-transparent hover:bg-white/5'}
-                                    `}
-                                    onClick={() => {
-                                        if (onSwitchLobby) onSwitchLobby(opt.key);
-                                        setShowLobbySwitcher(false);
-                                    }}
-                                    onMouseEnter={() => setSwitcherIndex(idx)}
-                                >
-                                    {opt.label}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                <div
+                    className="fixed inset-0 bg-black/20 backdrop-blur-md z-40"
+                    onClick={() => setShowLobbySwitcher(false)}
+                />
             )}
 
             {/* Network Selector Modal */}
             {showNetworkSelector && (
-                <div className="fixed inset-0 bg-black/60 z-50">
-                    {/* Positioned Sub-menu - Aligned with "NETWORK" text */}
-                    {/* "NETWORK" is 2nd item (index 1). Top ~6rem down. */}
-                    <div className="absolute top-[6.5rem] left-[2rem] w-[350px] flex flex-col">
-                        <div className="flex flex-col gap-0 bg-black/90 border border-white/20 shadow-2xl backdrop-blur-sm py-1">
-                            {NETWORK_OPTIONS.map((net, idx) => (
-                                <div
-                                    key={net}
-                                    className={`
-                                        pl-3 py-1 text-xl flex items-center cursor-pointer uppercase font-bold tracking-wide
-                                        ${idx === networkIndex
-                                            ? 'bg-gradient-to-r from-orange-500 via-orange-500 to-orange-500/10 text-white border-l-4 border-white'
-                                            : 'text-[#8db6ef] border-l-4 border-transparent hover:bg-white/5'}
-                                    `}
-                                    onClick={() => {
-                                        setCurrentNetwork(net);
-                                        setShowNetworkSelector(false);
-                                    }}
-                                    onMouseEnter={() => setNetworkIndex(idx)}
-                                >
-                                    {net}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                <NetworkSelector
+                    currentNetwork={currentNetwork}
+                    onSelect={(network) => {
+                        setCurrentNetwork(network);
+                        setShowNetworkSelector(false);
+                    }}
+                    onBack={() => setShowNetworkSelector(false)}
+                />
             )}
 
             {/* Difficulty Selector Modal */}
@@ -518,6 +524,18 @@ const Lobby = ({
                         setShowMapSelector(false);
                     }}
                     onBack={() => setShowMapSelector(false)}
+                />
+            )}
+
+            {/* Mission Selector Overlay */}
+            {showMissionSelector && (
+                <MissionSelector
+                    currentMission={currentMissionName}
+                    onSelect={(mission) => {
+                        setCurrentMissionName(mission);
+                        setShowMissionSelector(false);
+                    }}
+                    onBack={() => setShowMissionSelector(false)}
                 />
             )}
         </div>

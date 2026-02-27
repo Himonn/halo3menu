@@ -1,5 +1,9 @@
 import Menu from "@/app/components/halo/Menu";
-import Lobby from "@/app/components/halo/Lobby";
+import CampaignLobby from "@/app/components/halo/lobbies/CampaignLobby";
+import MatchmakingLobby from "@/app/components/halo/lobbies/MatchmakingLobby";
+import CustomGameLobby from "@/app/components/halo/lobbies/CustomGameLobby";
+import ForgeLobby from "@/app/components/halo/lobbies/ForgeLobby";
+import TheaterLobby from "@/app/components/halo/lobbies/TheaterLobby";
 import React, { useEffect, useState } from "react";
 import { YButton, StartButton, AButton, BButton, XButton } from "@/app/components/halo/XboxIcons";
 
@@ -106,6 +110,7 @@ const MenuContainer = ({ setBackgroundIndex }) => {
     const [menuStack, setMenuStack] = useState(['main']);
     const [playerName, setPlayerName] = useState('Master Chief');
     const [playerColor, setPlayerColor] = useState('#78866b');
+    const [currentNetwork, setCurrentNetwork] = useState("XBOX LIVE (FRIENDS ONLY)");
 
     const currentMenuKey = menuStack[menuStack.length - 1];
     const currentMenu = MENU_DATA[currentMenuKey] || MENU_DATA['main'];
@@ -128,13 +133,15 @@ const MenuContainer = ({ setBackgroundIndex }) => {
     // Effect to switch background when entering/leaving lobby
     useEffect(() => {
         if (setBackgroundIndex) {
-            if (isLobby) {
+            if (currentMenuKey === 'campaign') {
+                setBackgroundIndex(1); // Index of bg_chief_arbiter_hd.mp4
+            } else if (isLobby) {
                 setBackgroundIndex(5); // Index of mp_bg.mp4
             } else {
                 setBackgroundIndex(0); // Default background (e.g. bg_0_hd.mp4)
             }
         }
-    }, [isLobby, setBackgroundIndex]);
+    }, [isLobby, currentMenuKey, setBackgroundIndex]);
 
     useEffect(() => {
         function handleResize() {
@@ -199,14 +206,63 @@ const MenuContainer = ({ setBackgroundIndex }) => {
         <div className={containerStyle}>
             {isLobby ? (
                 <div className="flex flex-col h-full justify-between">
-                    <Lobby
-                        playerName={playerName}
-                        playerColor={playerColor}
-                        onUpdatePlayer={handleUpdatePlayer}
-                        onBack={handleBack}
-                        onSwitchLobby={handleSwitchLobby}
-                        {...currentMenu.props}
-                    />
+                    {/* Render Specific Lobby based on Key */}
+                    {currentMenuKey === 'campaign' && (
+                        <CampaignLobby
+                            playerName={playerName}
+                            playerColor={playerColor}
+                            currentNetwork={currentNetwork}
+                            onUpdatePlayer={handleUpdatePlayer}
+                            onBack={handleBack}
+                            onSwitchLobby={handleSwitchLobby}
+                            onNetworkChange={(n) => setCurrentNetwork(n)}
+                        />
+                    )}
+                    {currentMenuKey === 'matchmaking' && (
+                        <MatchmakingLobby
+                            playerName={playerName}
+                            playerColor={playerColor}
+                            currentNetwork={currentNetwork}
+                            onUpdatePlayer={handleUpdatePlayer}
+                            onBack={handleBack}
+                            onSwitchLobby={handleSwitchLobby}
+                            onNetworkChange={(n) => setCurrentNetwork(n)}
+                        />
+                    )}
+                    {currentMenuKey === 'custom_games' && (
+                        <CustomGameLobby
+                            playerName={playerName}
+                            playerColor={playerColor}
+                            currentNetwork={currentNetwork}
+                            onUpdatePlayer={handleUpdatePlayer}
+                            onBack={handleBack}
+                            onSwitchLobby={handleSwitchLobby}
+                            onNetworkChange={(n) => setCurrentNetwork(n)}
+                        />
+                    )}
+                    {currentMenuKey === 'forge' && (
+                        <ForgeLobby
+                            playerName={playerName}
+                            playerColor={playerColor}
+                            currentNetwork={currentNetwork}
+                            onUpdatePlayer={handleUpdatePlayer}
+                            onBack={handleBack}
+                            onSwitchLobby={handleSwitchLobby}
+                            onNetworkChange={(n) => setCurrentNetwork(n)}
+                        />
+                    )}
+                    {currentMenuKey === 'theater' && (
+                        <TheaterLobby
+                            playerName={playerName}
+                            playerColor={playerColor}
+                            currentNetwork={currentNetwork}
+                            onUpdatePlayer={handleUpdatePlayer}
+                            onBack={handleBack}
+                            onSwitchLobby={handleSwitchLobby}
+                            onNetworkChange={(n) => setCurrentNetwork(n)}
+                        />
+                    )}
+
                     {/* Lobby Footer */}
                     <div className="w-full bg-[#050b1b]/90 border-t border-white/30 pt-1 pb-1">
                         <div className={`pl-8 flex flex-row items-center text-white gap-6 w-full`}>

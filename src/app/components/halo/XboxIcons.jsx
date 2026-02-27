@@ -72,3 +72,11 @@ export const RankIcon = ({ className = "w-6 h-6", rank = 1 }) => (
         </span>
     </div>
 );
+
+export const XboxLogo = ({ className = "w-6 h-6" }) => (
+    <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="48" stroke="#107C10" strokeWidth="4" fill="black" />
+        <path d="M50 15 C 65 30, 85 40, 95 45 C 85 60, 60 90, 50 90 C 40 90, 15 60, 5 45 C 15 40, 35 30, 50 15" fill="#107C10" />
+        <path d="M50 20 C 60 30, 80 40, 90 45 C 80 55, 60 80, 50 85 C 40 80, 20 55, 10 45 C 20 40, 40 30, 50 20" fill="transparent" stroke="black" strokeWidth="2" />
+    </svg>
+);
